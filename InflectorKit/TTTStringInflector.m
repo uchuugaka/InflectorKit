@@ -45,6 +45,7 @@
 @property (readwrite, nonatomic, strong) NSMutableArray *mutablePluralRules;
 @property (readwrite, nonatomic, strong) NSMutableSet *mutableUncountables;
 @property (readwrite, nonatomic, strong) NSMutableDictionary *mutableIrregularPluralsBySingular;
+@property NSLocale *autoupdatingCurrentLocale; // This will always get updated, corresponding methods will adjust accordingly.
 @end
 
 @implementation TTTStringInflector
@@ -59,7 +60,8 @@
     self.mutablePluralRules = [[NSMutableArray alloc] init];
     self.mutableUncountables = [[NSMutableSet alloc] init];
     self.mutableIrregularPluralsBySingular = [[NSMutableDictionary alloc] init];
-
+	self.autoupdatingCurrentLocale = [NSLocale autoupdatingCurrentLocale];
+	
     return self;
 }
 
@@ -75,6 +77,22 @@
 }
 
 - (NSString *)singularize:(NSString *)string {
+	return [self singularize:string withLocale:self.autoupdatingCurrentLocale.copy];
+}
+
+- (NSString *)singularize:(NSString *)string withCurrentLocale:(BOOL)useCurrentLocale {
+	if (useCurrentLocale) {
+		return [self singularize:string withLocale:[NSLocale currentLocale]];
+	} else {
+		return [self singularize:string];
+	}
+}
+
+- (NSString *)singularize:(NSString *)string withLocale:(NSLocale *)locale {
+	if (locale == nil) {
+		locale = self.autoupdatingCurrentLocale.copy;
+	}
+	
     if ([self.mutableUncountables containsObject:string]) {
         return string;
     }
@@ -93,6 +111,22 @@
 }
 
 - (NSString *)pluralize:(NSString *)string {
+	return [self pluralize:string withLocale:self.autoupdatingCurrentLocale.copy];
+}
+
+- (NSString *)pluralize:(NSString *)string withCurrentLocale:(BOOL)useCurrentLocale {
+	if (useCurrentLocale) {
+		return [self pluralize:string withLocale:[NSLocale currentLocale]];
+	} else {
+		return [self pluralize:string];
+	}
+}
+
+- (NSString *)pluralize:(NSString *)string withLocale:(NSLocale *)locale {
+	if (locale == nil) {
+		locale = self.autoupdatingCurrentLocale.copy;
+	}
+	
     if ([self.mutableUncountables containsObject:string]) {
         return string;
     }
@@ -113,6 +147,14 @@
 - (void)addSingularRule:(NSString *)rule
         withReplacement:(NSString *)replacement
 {
+	NSLocale *locale = [NSLocale currentLocale];
+	[self addSingularRule:rule withReplacement:replacement forLocale:locale];
+}
+
+- (void)addSingularRule:(NSString *)rule
+		withReplacement:(NSString *)replacement
+			  forLocale:(NSLocale *)locale {
+	
     [self.mutableUncountables removeObject:rule];
 
     [self.mutableSingularRules insertObject:[TTTStringInflectionRule ruleWithPattern:rule options:NSRegularExpressionAnchorsMatchLines | NSRegularExpressionCaseInsensitive | NSRegularExpressionUseUnicodeWordBoundaries replacement:replacement] atIndex:0];
