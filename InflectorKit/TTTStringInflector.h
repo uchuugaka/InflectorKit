@@ -49,8 +49,11 @@
 /**
  
  */
+	// Use autoupdatingCurrentLocale (change with the system.)
 - (NSString *)pluralize:(NSString *)string;
+	// YES == use current locale. NO == use above method.
 - (NSString *)pluralize:(NSString *)string withCurrentLocale:(BOOL)useCurrentLocale;
+	// Supply the locale, or nil, to use the autoupdatingCurrentLocale copy.
 - (NSString *)pluralize:(NSString *)string withLocale:(NSLocale *)locale;
 ///===================
 /// @name Adding Rules
@@ -61,6 +64,10 @@
  */
 - (void)addSingularRule:(NSString *)rule
         withReplacement:(NSString *)replacement;
+
+- (void)addSingularRule:(NSString *)rule
+        withReplacement:(NSString *)replacement
+	  withCurrentLocale:(BOOL)useCurrentLocale;
 
 - (void)addSingularRule:(NSString *)rule
         withReplacement:(NSString *)replacement forLocale:(NSLocale *)locale;

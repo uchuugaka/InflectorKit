@@ -76,6 +76,8 @@
     return _defaultInflector;
 }
 
+#pragma mark - Inflecting
+#pragma mark Singularization
 - (NSString *)singularize:(NSString *)string {
 	return [self singularize:string withLocale:self.autoupdatingCurrentLocale.copy];
 }
@@ -110,6 +112,7 @@
     return mutableString;
 }
 
+#pragma mark Pluralization
 - (NSString *)pluralize:(NSString *)string {
 	return [self pluralize:string withLocale:self.autoupdatingCurrentLocale.copy];
 }
@@ -144,16 +147,31 @@
     return mutableString;
 }
 
+#pragma mark - Inflection Rule Creation
 - (void)addSingularRule:(NSString *)rule
         withReplacement:(NSString *)replacement
 {
-	NSLocale *locale = [NSLocale currentLocale];
-	[self addSingularRule:rule withReplacement:replacement forLocale:locale];
+	[self addSingularRule:rule withReplacement:replacement forLocale:self.autoupdatingCurrentLocale.copy];
+}
+
+- (void)addSingularRule:(NSString *)rule
+        withReplacement:(NSString *)replacement
+	  withCurrentLocale:(BOOL)useCurrentLocale {
+	
+	if (useCurrentLocale) {
+		return [self addSingularRule:rule forLocale:[NSLocale currentLocale]];
+	} else {
+		return [self pluralize:string];
+	}
 }
 
 - (void)addSingularRule:(NSString *)rule
 		withReplacement:(NSString *)replacement
-			  forLocale:(NSLocale *)locale {
+			  forLocale:(NSLocale *)locale
+{
+	if (locale == nil) {
+		locale = self.autoupdatingCurrentLocale.copy;
+	}
 	
     [self.mutableUncountables removeObject:rule];
 
